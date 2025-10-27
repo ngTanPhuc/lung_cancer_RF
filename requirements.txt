@@ -1,0 +1,9 @@
+
+gradio==5.49.1
+kagglehub==0.3.13
+matplotlib==3.10.7
+numpy==2.3.4
+pandas==2.3.3
+seaborn==0.13.2
+tensorflow==2.20.0
+ipykernel==7.0.1
