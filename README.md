@@ -4,10 +4,7 @@
 A machine learning project that uses Random Forest to predict lung cancer risk based on patient data.
 
 ## Link to the dataset
-https://www.kaggle.com/datasets/humairmunir/lung-cancer-risk-dataset?resource=download
-
-## Directory Structure
-```
+https://www.kaggle.com/datasets/mysarahmadbhat/lung-cancer/data
 .
 ├── data/
 │   ├── processed/              # Cleaned and preprocessed datasets
