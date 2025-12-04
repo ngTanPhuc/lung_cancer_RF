@@ -1,4 +1,4 @@
-from .models import BaseModel
+from .base_model import BaseModel
 
 import numpy as np
 import os
