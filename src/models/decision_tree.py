@@ -1,13 +1,12 @@
-from .models import BaseModel
-
 import numpy as np
-import os
-import pickle
+
+from .base_model import BaseModel
 
 class DecisionTreeModel(BaseModel):
     class TreeNode:
-        def __init__(self, feature=None, threshold=None, left=None, right=None, value=None):
+        def __init__(self, feature = None, threshold = None, left = None, right = None, value = None):
             self.feature = feature
+            self.gini = None
             self.threshold = threshold
             self.left = left
             self.right = right
@@ -16,17 +15,22 @@ class DecisionTreeModel(BaseModel):
         def is_leaf(self):
             return self.value is not None
 
-    def __init__(self, is_forest_tree = False, max_depth = 10, max_leaf_nodes = 50, min_samples_leaf = 2):
+    def __init__(self, is_forest_tree = False, max_depth = None, max_leaf_nodes = None, min_samples_leaf = None):
+        super.__init__()
         self.is_forest_tree = is_forest_tree
-        self.max_depth = max_depth
-        self.max_leaf_nodes = max_leaf_nodes
-        self.min_samples_leaf = min_samples_leaf
-        self.root = None
+
+        self.max_depth = max_depth if max_depth else int("inf")
+        self.max_leaf_nodes = max_leaf_nodes if max_leaf_nodes else int("inf")
+        self.min_samples_leaf = min_samples_leaf if min_samples_leaf else int("inf")
         self.leaf_count = 0
 
+        self.root = None
+
+    # =======================================
+    # OVERIDE TRAIN
+    # =======================================
     def _select_feature_subset(self, n_features):
         if self.is_forest_tree:
-            # Chọn ngẫu nhiên k chỉ số feature trong tổng số n_features feature mà KHÔNG trùng lặp.
             k = max(int(np.sqrt(n_features)), 1)  
             return np.random.choice(n_features, k, replace=False) 
         else:
@@ -36,13 +40,6 @@ class DecisionTreeModel(BaseModel):
         label_type, type_count = np.unique(y, return_counts=True)
         p = type_count / len(y)
         return 1 - np.sum(p**2)
-    # -----------------------------------------------------------
-    # y = [1,0,1,0,1]
-    # label_type = [0,1]
-    # type_count = [2,3]
-    # p = [2,3] / 5 = [0.4, 0.6]
-    # Gini = 1 - 0.4^2 - 0.6^2
-    # -----------------------------------------------------------
 
     def _best_split(self, X, y, features):
         best_feature = None
@@ -108,7 +105,12 @@ class DecisionTreeModel(BaseModel):
 
     def train(self, X, y):
         self.root = self._build(X.values, y.values, 0)
+        self.is_trained = True
+        return
 
+    # =======================================
+    # OVERIDE PREDICT - PREDICT_PROBA
+    # =======================================
     def _predict_one(self, x, node: TreeNode):
         if node.is_leaf():
             return node.value
@@ -118,24 +120,9 @@ class DecisionTreeModel(BaseModel):
             return self._predict_one(x, node.right)
 
     def predict(self, X):
+        self.check_is_trained()
         return np.array([self._predict_one(row, self.root) for row in X.values])
     
-    def save(self, filename="decision_tree_model.pkl"):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
-        models_dir = os.path.join(project_root, "models")
-        os.makedirs(models_dir, exist_ok=True)
-        save_path = os.path.join(models_dir, filename)
-        with open(save_path, "wb") as f:
-            pickle.dump(self, f)
-        print(f"Model saved to {save_path}")
-
-    @staticmethod
-    def load(filename="decision_tree_model.pkl"):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
-        load_path = os.path.join(project_root, "models", filename)
-        with open(load_path, "rb") as f:
-            model = pickle.load(f)
-        print(f"Model loaded from: {load_path}")
-        return model
+    def predict_proba(self, X):
+        self.check_is_trained()
+        return super().predict_proba(X)
