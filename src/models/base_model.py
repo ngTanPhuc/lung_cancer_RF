@@ -80,22 +80,12 @@ class BaseModel(ABC):
         """
         raise NotImplementedError("This model does not support probability prediction.")
 
-    def val(self, X_val: pd.DataFrame, y_val: pd.Series) -> float:
-        """
-        Compute validation accuracy.
-
-        Use case:
-        - Used *during training* to monitor model performance.
-        - Helps detect overfitting and tune hyperparameters.
-        """
-        return np.mean(self.predict(X_val) == y_val)
-
     def score(self, X: pd.DataFrame, y: pd.Series) -> float:
         """
         Compute accuracy on a given dataset.
 
         Use case:
-        - Used *after training is complete* for final evaluation.
+        - Helps detect overfitting and tune hyperparameters.
         - Typically applied to the test set for unbiased performance measurement.
         """
         return np.mean(self.predict(X) == y)
