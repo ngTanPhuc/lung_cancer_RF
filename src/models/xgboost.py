@@ -1,4 +1,4 @@
-from base_model import BaseModel
+from .base_model import BaseModel
 import numpy as np
 import pandas as pd
 from ..utils import LogisticLoss
@@ -138,8 +138,8 @@ class XGBoost(BaseModel):
     """
     def __init__(self, reg_lambda: float = 1.0, gamma: float = 0.0, max_leaf_nodes: int = 50,
                  n_estimators: int = 100, lr: float = 0.2, min_samples_split: int = 5,
-                 min_impurity: float = 0.01, max_depth: int = 10, random_state: int = 82):
-        super().__init__(random_state=random_state)
+                 min_impurity: float = 0.01, max_depth: int = 10):
+        super().__init__()
         self.reg_lambda = reg_lambda
         self.gamma = gamma
         self.max_leaf_nodes = max_leaf_nodes
@@ -162,14 +162,19 @@ class XGBoost(BaseModel):
             ))
 
     def train(self, X: pd.DataFrame, y: pd.Series) -> None:
-        curr_pred = np.zeros(X.shape[0])
+        X_data = X.values if isinstance(X, pd.DataFrame) else X
+        y_data = y.values if isinstance(y, pd.Series) else y
+
+        curr_pred = np.zeros(X_data.shape[0])
 
         for tree in self.trees:
             p = self.loss.calc_p(curr_pred)
-            g = self.loss.gradient(y, curr_pred)
+            g = self.loss.gradient(y_data, curr_pred)
             h = self.loss.hessian(curr_pred)
 
-            tree.fit(X, g, h)
+            tree.fit(X_data, g, h)
+
+        self.is_trained = True
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         self.check_is_trained()
