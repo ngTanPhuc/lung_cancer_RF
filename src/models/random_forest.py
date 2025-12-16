@@ -1,14 +1,16 @@
+
+import numpy as np
+import pandas as pd
+from collections import defaultdict
+from typing import Optional, override
+
 from .base_model import BaseModel
 from .decision_tree import DecisionTreeModel
 
-import numpy as np
-import os
-import pickle
-
 class RandomForestModel(BaseModel):
-    def __init__(self, n_trees=10, random_state=6):
+    def __init__(self, n_trees = 10, random_state = 42):
+        super().__init__(random_state = random_state)
         self.n_trees = n_trees
-        self.random_state = random_state
         self.rng = np.random.default_rng(random_state)
         self.trees = []
         self.oob_predictions = {}
@@ -31,23 +33,24 @@ class RandomForestModel(BaseModel):
             final.append(values[np.argmax(counts)])
         return np.array(final)
 
+    @override
     def train(self, X, y):
         self.trees = []
-        self.oob_predictions = {i: [] for i in range(len(X))}
+        for i in range(len(X)):
+            self.oob_predictions[i] = [] 
 
         for i in range(self.n_trees):
             tree = DecisionTreeModel(is_forest_tree=True)
-
             X_sample, y_sample, inbag_idx, oob_idx = self._bootstrap_sample(X, y)
             tree.train(X_sample, y_sample)
             self.trees.append(tree)
 
             if len(oob_idx) > 0:
                 preds = tree.predict(X.iloc[oob_idx])
-                for idx, p in zip(oob_idx, preds):
-                    self.oob_predictions[idx].append(p)
+                for idx, pred in zip(oob_idx, preds):
+                    self.oob_predictions[idx].append(pred)
 
-            print(f"✓ Trained tree {i + 1}/{self.n_trees}")
+        self.is_trained = True
 
     def oob_score(self, y):
         final_preds = []
@@ -63,28 +66,23 @@ class RandomForestModel(BaseModel):
         true_labels = np.array(true_labels)
         return np.mean(final_preds == true_labels)
 
+    @override
     def predict(self, X):
-        all_preds = []
-        for tree in self.trees:
-            all_preds.append(tree.predict(X))
-        return self._majority_vote(all_preds)
+        proba = self.predict_proba(X)
+        return np.argmax(proba, axis=1)
     
-    def save(self, filename="random_forest_model.pkl"):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
-        models_dir = os.path.join(project_root, "models")
-        os.makedirs(models_dir, exist_ok=True)
-        save_path = os.path.join(models_dir, filename)
-        with open(save_path, "wb") as f:
-            pickle.dump(self, f)
-        print(f"Model saved to {save_path}")
+    @override
+    def predict_proba(self, X):
+        self.check_is_trained()
+        n_samples = len(X)
+        n_classes = 2  
 
-    @staticmethod
-    def load(filename="random_forest_model.pkl"):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
-        load_path = os.path.join(project_root, "models", filename)
-        with open(load_path, "rb") as f:
-            model = pickle.load(f)
-        print(f"Model loaded from: {load_path}")
-        return model
+        proba_sum = np.zeros((n_samples, n_classes))
+
+        for tree in self.trees:
+            tree_preds = tree.predict(X)
+            for i, pred in enumerate(tree_preds):
+                proba_sum[i, pred] += 1
+
+        proba = proba_sum / len(self.trees)
+        return proba
