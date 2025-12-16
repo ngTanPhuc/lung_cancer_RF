@@ -68,7 +68,6 @@ class BaseModel(ABC):
         """
         pass
 
-    @abstractmethod
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """
         Return class probability estimates for input X.
