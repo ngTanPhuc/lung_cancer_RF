@@ -1,48 +1,39 @@
 import gradio as gr
-import random
+import pandas as pd
+import utils
 
-class MockModel:
-    def predict(self, input_data):
-        count = 0
-        if input_data[1] > 60: count += input_data[1]*0.2
-        if input_data[2]: count += 1
-        if input_data[3]: count += 2
-        if input_data[4]: count += 3
-
-        return True if count > 20 else False
-
-    def predict_conf(self):
-        return round(random.random(), 2)
-
-
-model = MockModel()
+model_path = "xg_boost_model.pkl"
+model = utils.ModelIO.load(model_path)
 
 def predict_lung_cancer(is_male, age, smoking, yellow_fingers, anxiety, peer_pressure,
                chronic_disease, fatigue, allergy, wheezing, coughing,
                shortness_of_breath, swallowing_difficulty, chest_pain) -> list:
-    IS_MALE = True if is_male == "Male" else False
-    to_boolean = lambda x: True if x == "Yes" else False
+    IS_MALE = 1 if is_male == "Male" else 0
+    to_int = lambda x: 1 if x == "Yes" else 0
 
     input_data = [
         IS_MALE,
         age,
-        to_boolean(smoking),
-        to_boolean(yellow_fingers),
-        to_boolean(anxiety),
-        to_boolean(peer_pressure),
-        to_boolean(chronic_disease),
-        to_boolean(fatigue),
-        to_boolean(allergy),
-        to_boolean(wheezing),
-        to_boolean(coughing),
-        to_boolean(shortness_of_breath),
-        to_boolean(swallowing_difficulty),
-        to_boolean(chest_pain)
+        to_int(smoking),
+        to_int(yellow_fingers),
+        to_int(anxiety),
+        to_int(peer_pressure),
+        to_int(chronic_disease),
+        to_int(fatigue),
+        to_int(allergy),
+        to_int(wheezing),
+        to_int(coughing),
+        to_int(shortness_of_breath),
+        to_int(swallowing_difficulty),
+        to_int(chest_pain)
     ]
+    df = pd.DataFrame(input_data).transpose()
 
     # confidence_score = 100
     # return ["You are gay", f"{confidence_score}%"]
-    return [model.predict(input_data), f"{model.predict_conf()*100}%"]
+    is_cancer = model.predict(df) == [1]
+    output = "You have lung cancer ✨" if is_cancer[0] else "You don't have lung cancer 😔"
+    return output
 
 with gr.Blocks() as demo:
     gr.Markdown("# Lung Cancer Detection")
@@ -68,10 +59,18 @@ with gr.Blocks() as demo:
 
             submit_btn = gr.Button("Submit form")
 
-        with gr.Column():
-            gr.Markdown("Result: ")
             result_output = gr.Text(label="Result: ", show_copy_button=True)
-            confidence_output = gr.Text(label="Confidence Score: ")
+
+            gr.Markdown("# Buy me a coffee ☕")
+
+    with gr.Row():
+        # QR money transfer
+        with gr.Column():
+            gr.Image(value="../QR_Phuc.jpg", interactive=False, height=500)
+        with gr.Column():
+            gr.Image(value="../QR_Qui.jpg", interactive=False, height=500)
+        with gr.Column():
+            gr.Image(value="../QR_Phuc.jpg", interactive=False, height=500)
 
         submit_btn.click(
             fn=predict_lung_cancer,
@@ -89,7 +88,7 @@ with gr.Blocks() as demo:
                     shortness_of_breath,
                     swallowing_difficulty,
                     chest_pain],
-            outputs=[result_output, confidence_output]
+            outputs=result_output
         )
 
 if __name__ == "__main__":
