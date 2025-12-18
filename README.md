@@ -11,14 +11,14 @@ https://www.kaggle.com/datasets/mysarahmadbhat/lung-cancer/data
 ├── data/
 │   ├── processed/              # Cleaned and preprocessed datasets
 │   └── raw/                    # Original, immutable data
-├── models/                     # Trained model files
+├── checkpoints/                # Trained model files
 ├── notebooks/                  # Jupyter notebooks
 │   └── 01_data_review.ipynb
 └── src/                        # Source code
-    ├── model.py                # Model training code
-    ├── predict.py              # Prediction interface
-    ├── preprocess.py           # Data preprocessing
-    └── utils.py                # Utility functions
+    ├── models/                 # Model classes definitions
+    ├── dataset.py              # Class Dataset definition
+    ├── UI.py                   # App
+    └── utils.py                # Utility functions and classes
 ```
 
 ## Setup
@@ -27,29 +27,3 @@ https://www.kaggle.com/datasets/mysarahmadbhat/lung-cancer/data
 ```sh
 pip install -r requirements.txt
 ```
-
-## Usage
-1. Data Preprocessing:
-```sh
-python3 src/preprocess.py
-```
-
-2. Train Model:
-```sh
-python3 src/model.py
-```
-
-3. Make Predictions:
-```sh
-python3 src/predict.py
-```
-
-## Project Structure
-- `data/`: Contains raw and processed datasets
-- `models/`: Stores trained model files
-- `notebooks/`: Jupyter notebooks for data analysis
-- `src/`: Source code for the project
-  - `model.py`: Implementation of the Random Forest model
-  - `predict.py`: Functions for making predictions
-  - `preprocess.py`: Data preprocessing pipeline
-  - `utils.py`: Utility functions
