@@ -2,6 +2,7 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from .models import BaseModel
 
@@ -41,7 +42,9 @@ class ModelIO:
         with open(save_path, "wb") as f:
             pickle.dump(model, f)
 
-        print(f"Model saved to: {save_path}")
+        project_name = os.path.basename(project_root)
+        relative_path = os.path.join(project_name, "checkpoints", filename)
+        print(f"Model saved to: {relative_path}")
         return True
 
     @staticmethod
@@ -68,7 +71,9 @@ class ModelIO:
         with open(load_path, "rb") as f:
             model = pickle.load(f)
 
-        print(f"Model loaded from: {load_path}")
+        project_name = os.path.basename(project_root)
+        relative_path = os.path.join(project_name, "checkpoints", filename)
+        print(f"Model loaded from: {relative_path}")
         return model
 
     @staticmethod
