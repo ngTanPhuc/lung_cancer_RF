@@ -180,3 +180,42 @@ class DecisionTreeModel(BaseModel):
     def predict_proba(self, X):
         self.check_is_trained()
         return super().predict_proba(X)
+
+    # =======================================
+    # SHOW TREE
+    # =======================================
+    def print_tree(self) -> None:
+        """
+        Print the full decision tree structure (no depth limit).
+        """
+        self.check_is_trained()
+        self._print_node(self.root, prefix="", is_last=True)
+
+
+    def _print_node(self, node: TreeNode, prefix: str, is_last: bool) -> None:
+        connector = "└── " if is_last else "├── "
+
+        if node.is_leaf():
+            print(f"{prefix}{connector}Predict: {node.value}")
+            return
+
+        feature_name = (
+            node.feature_name
+            if node.feature_name is not None
+            else f"feature_{node.feature}"
+        )
+
+        print(
+            f"{prefix}{connector}"
+            f"[{feature_name} <= {node.threshold:.4f}] "
+            f"(gini={node.gini:.4f})"
+        )
+
+        # prefix for children
+        child_prefix = prefix + ("    " if is_last else "│   ")
+
+        # left = not last (because right exists)
+        self._print_node(node.left, child_prefix, is_last=False)
+
+        # right = last child
+        self._print_node(node.right, child_prefix, is_last=True)

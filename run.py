@@ -85,6 +85,7 @@ def remove_environment():
         print("✓ venv removed successfully.")
     except Exception as e:
         print(f"Failed to remove venv: {e}")
+        print("Deactive your venv by command: deactivate")
 
 
 def main():

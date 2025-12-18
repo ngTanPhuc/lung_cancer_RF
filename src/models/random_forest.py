@@ -50,6 +50,7 @@ class RandomForestModel(BaseModel):
                 for idx, pred in zip(oob_idx, preds):
                     self.oob_predictions[idx].append(pred)
 
+        self.oob = self.oob_score(y)
         self.is_trained = True
 
     def oob_score(self, y):
