@@ -1,5 +1,6 @@
 import os
 import pickle
+import numpy as np
 
 from .models import BaseModel
 
@@ -142,3 +143,23 @@ class ModelIO:
         for m in model_files:
             print(f" - {m}")
         return model_files
+
+class LogisticLoss:
+    def __init__(self):
+        pass
+
+    def calc_p(self, y_pred):
+        return 1 / (1 + np.exp(-y_pred))
+
+    def loss(self, y_true, y_pred):
+        y_pred = np.clip(y_pred, 1e-5, 1 - 1e-5)  # to make sure the value is in between (1e-5 and 0.99999)
+        p = self.calc_p(y_pred)
+        return -(y_true*np.log(p) + (1 - y_true)*np.log(1 - p))
+
+    def gradient(self, y_true, y_pred):  # g_i
+        p = self.calc_p(y_pred)
+        return p - y_true
+
+    def hessian(self, y_pred):  # h_i
+        p = self.calc_p(y_pred)
+        return p*(1 - p)
