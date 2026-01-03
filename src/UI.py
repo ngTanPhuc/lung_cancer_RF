@@ -70,7 +70,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             gr.Image(value="../QR_Qui.jpg", interactive=False, height=500)
         with gr.Column():
-            gr.Image(value="../QR_Phuc.jpg", interactive=False, height=500)
+            gr.Image(value="../QR_Quoc.jpg", interactive=False, height=500)
 
         submit_btn.click(
             fn=predict_lung_cancer,
