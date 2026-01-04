@@ -2,12 +2,12 @@ import gradio as gr
 import pandas as pd
 import utils
 
-model_path = "xg_boost_model.pkl"
+model_path = "random_forest_model.pkl"
 model = utils.ModelIO.load(model_path)
 
 def predict_lung_cancer(is_male, age, smoking, yellow_fingers, anxiety, peer_pressure,
-               chronic_disease, fatigue, allergy, wheezing, coughing,
-               shortness_of_breath, swallowing_difficulty, chest_pain) -> list:
+               chronic_disease, fatigue, allergy, wheezing, alcohol_consuming, coughing,
+               shortness_of_breath, swallowing_difficulty, chest_pain) -> str:
     IS_MALE = 1 if is_male == "Male" else 0
     to_int = lambda x: 1 if x == "Yes" else 0
 
@@ -22,6 +22,7 @@ def predict_lung_cancer(is_male, age, smoking, yellow_fingers, anxiety, peer_pre
         to_int(fatigue),
         to_int(allergy),
         to_int(wheezing),
+        to_int(alcohol_consuming),
         to_int(coughing),
         to_int(shortness_of_breath),
         to_int(swallowing_difficulty),
@@ -52,6 +53,7 @@ with gr.Blocks() as demo:
             fatigue = gr.Radio(choices=["Yes", "No"], label="Do you often experience fatigue?")
             allergy = gr.Radio(choices=["Yes", "No"], label="Do you have allergy?")
             wheezing = gr.Radio(choices=["Yes", "No"], label="Do you often wheezing?")
+            alcohol_consuming = gr.Radio(choices=["Yes", "No"], label="Do often drink alcohol?")
             coughing = gr.Radio(choices=["Yes", "No"], label="Do you often cough?")
             shortness_of_breath = gr.Radio(choices=["Yes", "No"], label="Do you have shortness of breath?")
             swallowing_difficulty = gr.Radio(choices=["Yes", "No"], label="Do you have swallowing difficulty?")
@@ -84,6 +86,7 @@ with gr.Blocks() as demo:
                     fatigue,
                     allergy,
                     wheezing,
+                    alcohol_consuming,
                     coughing,
                     shortness_of_breath,
                     swallowing_difficulty,
